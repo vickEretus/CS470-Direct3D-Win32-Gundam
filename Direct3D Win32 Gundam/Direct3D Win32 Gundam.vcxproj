@@ -209,6 +209,7 @@
     <Manifest Include="settings.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="cup.cmo" />
     <None Include="cup.mtl" />
     <None Include="cup._obj" />
     <None Include="packages.config" />

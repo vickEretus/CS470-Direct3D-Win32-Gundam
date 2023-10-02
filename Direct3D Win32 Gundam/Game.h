@@ -99,6 +99,8 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_offscreenRenderTargetSRV;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilSRV;
 
-  
+
+	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
+	std::unique_ptr<DirectX::Model> m_model;
 
 };

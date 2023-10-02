@@ -5,9 +5,6 @@
 #include "pch.h"
 #include "Game.h"
 
-#include "pch.h"
-#include "Game.h"
-
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
@@ -83,7 +80,8 @@ void Game::Update(DX::StepTimer const& timer)
         //Comment this to have a swival 
     m_world = Matrix::CreateRotationY(time);
 
-    elapsedTime;
+	m_world = Matrix::CreateRotationZ(cosf(time) * 2.f);
+
 }
 #pragma endregion
 
@@ -102,26 +100,17 @@ void Game::Render()
     m_deviceResources->PIXBeginEvent(L"Render");
     auto context = m_deviceResources->GetD3DDeviceContext();
 
-    //m_spriteBatch->Begin(SpriteSortMode_Deferred, m_states->NonPremultiplied());
-
-    //m_spriteBatch->Draw(m_texture.Get(), m_screenPos, nullptr,
-    //    Colors::White, 0.f, m_origin);
-
-    //m_spriteBatch->End();
-
-
+    //Creates new background
     m_spriteBatch->Begin();
 
     m_spriteBatch->Draw(m_background.Get(), m_fullscreenRect);
-
-    m_spriteBatch->Draw(m_texture.Get(), m_screenPos, nullptr,
-        Colors::White, 0.f, m_origin);
 
     m_spriteBatch->End();
 
     context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
     context->OMSetDepthStencilState(m_states->DepthNone(), 0);
-    //Anti-aliased lines
+
+	//Anti-aliased lines
     context->RSSetState(m_raster.Get());
 
 
@@ -130,21 +119,9 @@ void Game::Render()
     context->IASetInputLayout(m_inputLayout.Get());
 
 
-//Creating a triangle
- /*   m_batch->Begin();
-
-    VertexPositionColor v1(Vector3(0.f, 0.5f, 0.5f), Colors::Yellow);
-    VertexPositionColor v2(Vector3(0.5f, -0.5f, 0.5f), Colors::Yellow);
-    VertexPositionColor v3(Vector3(-0.5f, -0.5f, 0.5f), Colors::Yellow);
-
-    m_batch->DrawTriangle(v1, v2, v3);
-
-    m_batch->End();*/
-
     //3D object 
 
-    //m_shape->Draw(m_world, m_view, m_proj);
-    m_shape->Draw(m_world, m_view, m_proj, Colors::White, m_texture.Get());
+   // m_shape->Draw(m_world, m_view, m_proj, Colors::White, m_texture.Get());
 
     //Grid
     m_effect->SetWorld(m_world);
@@ -188,19 +165,21 @@ void Game::Render()
 
     m_batch->End(); 
 
-
-
-
-    //context;
-    //m_deviceResources->PIXEndEvent();
+        //Model
+    m_model->Draw(context, *m_states, m_world, m_view, m_proj);
+    
 
     //Mutlisampling
     context->ResolveSubresource(m_deviceResources->GetRenderTarget(), 0,
         m_offscreenRenderTarget.Get(), 0,
         m_deviceResources->GetBackBufferFormat());
-    
+
+
+
+    m_deviceResources->PIXEndEvent();
     // Show the new frame.
     m_deviceResources->Present();
+
 }
 
 // Helper method to clear the back buffers.
@@ -297,39 +276,13 @@ void Game::CreateDeviceDependentResources()
     
    ComPtr<ID3D11Resource> resource;
 
-   /* DX::ThrowIfFailed(
-        CreateWICTextureFromFile(device, L"cat.png",
-            resource.GetAddressOf(),
-            m_texture.ReleaseAndGetAddressOf()));
 
-    ComPtr<ID3D11Texture2D> cat;
-    DX::ThrowIfFailed(resource.As(&cat));
-
-    CD3D11_TEXTURE2D_DESC catDesc;
-    cat->GetDesc(&catDesc);
-
-    m_origin.x = float(catDesc.Width / 2);
-    m_origin.y = float(catDesc.Height / 2);
-    */
     m_states = std::make_unique<CommonStates>(device);
 
     DX::ThrowIfFailed(
         CreateWICTextureFromFile(device, L"sunset.jpg", nullptr,
             m_background.ReleaseAndGetAddressOf()));
 
-    //Creating Resources for the triangle
-
-    m_states = std::make_unique<CommonStates>(device);
-
-    m_effect = std::make_unique<BasicEffect>(device);
-    m_effect->SetVertexColorEnabled(true);
-
-    DX::ThrowIfFailed(
-        CreateInputLayoutFromEffect<VertexType>(device, m_effect.get(),
-            m_inputLayout.ReleaseAndGetAddressOf())
-    );
-    
-    m_batch = std::make_unique<PrimitiveBatch<VertexType>>(context);
 
 
     //3D object 
@@ -376,8 +329,16 @@ void Game::CreateDeviceDependentResources()
     DX::ThrowIfFailed(device->CreateRasterizerState(&rastDesc,
         m_raster.ReleaseAndGetAddressOf()));
 
-    
-    device;
+
+    //Modeling
+    m_states = std::make_unique<CommonStates>(device);
+
+	m_fxFactory = std::make_unique<EffectFactory>(device);
+
+
+	m_model = Model::CreateFromCMO(device, L"cup.cmo", *m_fxFactory);
+	m_world = Matrix::Identity;
+
   
 }
 
@@ -388,23 +349,16 @@ void Game::CreateWindowSizeDependentResources()
 
     auto size = m_deviceResources->GetOutputSize();
 
-    Matrix proj = Matrix::CreateScale(2.f / float(size.right),
-        -2.f / float(size.bottom), 1.f)
-        * Matrix::CreateTranslation(-1.f, 1.f, 0.f);
+    Matrix proj = Matrix::CreateScale(2.f / float(size.right), -2.f / float(size.bottom), 1.f) * Matrix::CreateTranslation(-1.f, 1.f, 0.f);
     m_effect->SetProjection(proj);
 
     //3D object 
-    m_view = Matrix::CreateLookAt(Vector3(2.f, 2.f, 2.f),
-        Vector3::Zero, Vector3::UnitY);
-    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
-        float(size.right) / float(size.bottom), 0.1f, 10.f);
+    m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.f), Vector3::Zero, Vector3::UnitY);
+    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,float(size.right) / float(size.bottom), 0.1f, 10.f);
 
     //Grid
 
-    m_view = Matrix::CreateLookAt(Vector3(2.f, 3.f, 2.f),
-        Vector3::Zero, Vector3::UnitY);
-    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,
-        float(size.right) / float(size.bottom), 0.2f, 10.f);
+    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,float(size.right) / float(size.bottom), 0.2f, 10.f);
 
 
     //Multisampling
@@ -446,6 +400,9 @@ void Game::CreateWindowSizeDependentResources()
 
     m_effect->SetView(m_view);
     m_effect->SetProjection(m_proj);
+
+    //Modeling
+	
 }
 
 void Game::OnDeviceLost()
@@ -471,6 +428,11 @@ void Game::OnDeviceLost()
     m_offscreenRenderTarget.Reset();
     m_offscreenRenderTargetSRV.Reset();
     m_depthStencilSRV.Reset();
+
+    //Modeling
+    m_states.reset();
+	m_fxFactory.reset();
+	m_model.reset();
 }
 
 void Game::OnDeviceRestored()

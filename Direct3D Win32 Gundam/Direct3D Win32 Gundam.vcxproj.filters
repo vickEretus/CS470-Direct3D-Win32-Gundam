@@ -60,5 +60,8 @@
     <None Include="cup.mtl">
       <Filter>Assets</Filter>
     </None>
+    <None Include="cup.cmo">
+      <Filter>Assets</Filter>
+    </None>
   </ItemGroup>
 </Project>
