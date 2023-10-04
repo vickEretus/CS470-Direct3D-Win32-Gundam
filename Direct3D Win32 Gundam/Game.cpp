@@ -19,14 +19,25 @@ using Microsoft::WRL::ComPtr;
 //Multisampling
 namespace
 {
-    constexpr UINT MSAA_COUNT = 4;
+   const XMVECTORF32 START_POSITION = { 0.f, 0.25f, -3.f, 0.f };
+    //The Starting position of the Camera
+   const XMVECTORF32 ROOM_BOUNDS = { 8.f, 6.f, 12.f, 0.f };
+   constexpr float ROTATION_GAIN = 0.004f;
+   constexpr float MOVEMENT_GAIN = 0.07f;
+
+	constexpr UINT MSAA_COUNT = 4;
     constexpr UINT MSAA_QUALITY = 0;
 }
 
-Game::Game() noexcept(false)
+Game::Game() noexcept(false):
+	m_pitch(0),
+    m_yaw(0),
+    m_cameraPos(START_POSITION),
+    m_roomColor(Colors::White)
 {
     //m_deviceResources = std::make_unique<DX::DeviceResources>(); No Multisampling
     //Multisampling
+
     m_deviceResources = std::make_unique<DX::DeviceResources>(
         DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_UNKNOWN);
     // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
@@ -52,6 +63,9 @@ void Game::Initialize(HWND window, int width, int height)
     m_timer.SetFixedTimeStep(true);
     m_timer.SetTargetElapsedSeconds(1.0 / 60);
     */
+    m_keyboard = std::make_unique<Keyboard>();
+	m_mouse = std::make_unique<Mouse>();
+	m_mouse->SetWindow(window);
 }
 
 #pragma region Frame Update
@@ -69,18 +83,123 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
-    float elapsedTime = float(timer.GetElapsedSeconds());
+	static_cast<float>(timer.GetElapsedSeconds());
 
-    auto time = static_cast<float>(timer.GetTotalSeconds());
+    static_cast<float>(timer.GetTotalSeconds());
 
-    //m_world = Matrix::CreateRotationZ(cosf(time) * 2.f);
+	const auto mouse = m_mouse->GetState();
     
+    m_mouseButtons.Update(mouse);
+	if (mouse.positionMode == Mouse::MODE_RELATIVE)
+	{
+		const Vector3 delta = Vector3(static_cast<float>(mouse.x), static_cast<float>(mouse.y), 0.f)
+	                    * ROTATION_GAIN;
+
+	    m_pitch -= delta.y;
+	    m_yaw -= delta.x;
+	}
+
+	m_mouse->SetMode(mouse.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
+
+
     //Grid
     m_world = Matrix::CreateRotationY(cosf(static_cast<float>(timer.GetTotalSeconds())));
         //Comment this to have a swival 
-    m_world = Matrix::CreateRotationY(time);
 
-	m_world = Matrix::CreateRotationZ(cosf(time) * 2.f);
+	m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
+
+	    // limit pitch to straight up or straight down
+	constexpr float limit = XM_PIDIV2 - 0.01f;
+	m_pitch = std::max(-limit, m_pitch);
+	m_pitch = std::min(+limit, m_pitch);
+
+	// keep longitude in sane range by wrapping
+	if (m_yaw > XM_PI)
+	{
+	    m_yaw -= XM_2PI;
+	}
+	else if (m_yaw < -XM_PI)
+	{
+	    m_yaw += XM_2PI;
+	}
+
+	float y = sinf(m_pitch);
+	float r = cosf(m_pitch);
+	float z = r * cosf(m_yaw);
+	float x = r * sinf(m_yaw);
+
+	XMVECTOR lookAt = m_cameraPos + Vector3(x, y, z);
+
+	m_view = XMMatrixLookAtRH(m_cameraPos, lookAt, Vector3::Up);
+
+
+	
+
+
+
+	const auto kb = m_keyboard->GetState();
+	m_keys.Update(kb);
+	if ( kb.Escape )
+	{
+	    ExitGame();
+	}
+
+	if (kb.Home)
+	{
+	    m_cameraPos = START_POSITION.v;
+	    m_pitch = m_yaw = 0;
+	}
+
+	Vector3 move = Vector3::Zero;
+
+	if (kb.Up)
+	    move.y += 1.f;
+
+	if (kb.Down)
+	    move.y -= 1.f;
+
+	if (kb.A)
+	    move.x += 1.f;
+
+	if (kb.D)
+	    move.x -= 1.f;
+
+	if (kb.W)
+	    move.z += 1.f;
+
+	if (kb.S)
+	    move.z -= 1.f;
+
+	Quaternion q = Quaternion::CreateFromYawPitchRoll(m_yaw, m_pitch, 0.f);
+
+	move = Vector3::Transform(move, q);
+
+	move *= MOVEMENT_GAIN;
+
+	m_cameraPos += move;
+
+	Vector3 halfBound = (Vector3(ROOM_BOUNDS.v) / Vector3(2.f) ) - Vector3(0.1f, 0.1f, 0.1f);
+
+	m_cameraPos = Vector3::Min(m_cameraPos, halfBound);
+	m_cameraPos = Vector3::Max(m_cameraPos, -halfBound);
+
+
+
+    //Changes the Color of the Texture
+	if (m_keys.pressed.Tab || m_mouseButtons.rightButton == Mouse::ButtonStateTracker::PRESSED)
+	{
+    if (m_roomColor == Colors::Red.v)
+        m_roomColor = Colors::Green;
+    else if (m_roomColor == Colors::Green.v)
+        m_roomColor = Colors::Blue;
+	else if (m_roomColor == Colors::Blue.v)
+        m_roomColor = Colors::White;
+	else
+        m_roomColor = Colors::Red;
+	}
+
+
+	// limit pitch to straight up or straight down
 
 }
 #pragma endregion
@@ -118,11 +237,8 @@ void Game::Render()
 
     context->IASetInputLayout(m_inputLayout.Get());
 
-
-    //3D object 
-
-   // m_shape->Draw(m_world, m_view, m_proj, Colors::White, m_texture.Get());
-
+	//3D object 
+	m_shape->Draw(m_world, m_view, m_proj, Colors::White, m_texture.Get());
     //Grid
     m_effect->SetWorld(m_world);
 
@@ -131,50 +247,58 @@ void Game::Render()
     context->IASetInputLayout(m_inputLayout.Get());
     
     
-    m_batch->Begin();
+    //m_batch->Begin();
 
-    Vector3 xaxis(2.f, 0.f, 0.f);
-    Vector3 yaxis(0.f, 0.f, 2.f);
-    Vector3 origin = Vector3::Zero;
+    //Vector3 xaxis(2.f, 0.f, 0.f);
+    //Vector3 yaxis(0.f, 0.f, 2.f);
+    //Vector3 origin = Vector3::Zero;
 
-    constexpr size_t divisions = 20;
+    //constexpr size_t divisions = 20;
 
-    for (size_t i = 0; i <= divisions; ++i)
-    {
-        float fPercent = float(i) / float(divisions);
-        fPercent = (fPercent * 2.0f) - 1.0f;
+    //for (size_t i = 0; i <= divisions; ++i)
+    //{
+    //    float fPercent = float(i) / float(divisions);
+    //    fPercent = (fPercent * 2.0f) - 1.0f;
 
-        Vector3 scale = xaxis * fPercent + origin;
+    //    Vector3 scale = xaxis * fPercent + origin;
 
-        VertexPositionColor v1(scale - yaxis, Colors::White);
-        VertexPositionColor v2(scale + yaxis, Colors::White);
-        m_batch->DrawLine(v1, v2);
-    }
+    //    VertexPositionColor v1(scale - yaxis, Colors::White);
+    //    VertexPositionColor v2(scale + yaxis, Colors::White);
+    //    m_batch->DrawLine(v1, v2);
+    //}
 
-    for (size_t i = 0; i <= divisions; i++)
-    {
-        float fPercent = float(i) / float(divisions);
-        fPercent = (fPercent * 2.0f) - 1.0f;
+    //for (size_t i = 0; i <= divisions; i++)
+    //{
+    //    float fPercent = float(i) / float(divisions);
+    //    fPercent = (fPercent * 2.0f) - 1.0f;
 
-        Vector3 scale = yaxis * fPercent + origin;
+    //    Vector3 scale = yaxis * fPercent + origin;
 
-        VertexPositionColor v1(scale - xaxis, Colors::White);
-        VertexPositionColor v2(scale + xaxis, Colors::White);
-        m_batch->DrawLine(v1, v2);
-    }
+    //    VertexPositionColor v1(scale - xaxis, Colors::White);
+    //    VertexPositionColor v2(scale + xaxis, Colors::White);
+    //    m_batch->DrawLine(v1, v2);
+    //}
 
-    m_batch->End(); 
+    //m_batch->End(); 
 
         //Model
     m_model->Draw(context, *m_states, m_world, m_view, m_proj);
     
+    //Texture room
+    m_room->Draw(Matrix::Identity, m_view, m_proj,m_roomColor, m_roomTex.Get());
+
+
+
+
+
+
+
+
 
     //Mutlisampling
     context->ResolveSubresource(m_deviceResources->GetRenderTarget(), 0,
         m_offscreenRenderTarget.Get(), 0,
         m_deviceResources->GetBackBufferFormat());
-
-
 
     m_deviceResources->PIXEndEvent();
     // Show the new frame.
@@ -213,7 +337,9 @@ void Game::Clear()
 // Message handlers
 void Game::OnActivated()
 {
-    // TODO: Game is becoming active window.
+    m_keys.Reset();
+	m_mouseButtons.Reset();
+	// TODO: Game is becoming active window.
 }
 
 void Game::OnDeactivated()
@@ -229,6 +355,8 @@ void Game::OnSuspending()
 void Game::OnResuming()
 {
     m_timer.ResetElapsedTime();
+    m_keys.Reset();
+	m_mouseButtons.Reset();
 
     // TODO: Game is being power-resumed (or returning from minimize).
 }
@@ -287,8 +415,13 @@ void Game::CreateDeviceDependentResources()
 
     //3D object 
     m_shape = GeometricPrimitive::CreateSphere(context);
-    m_world = Matrix::Identity;
-    /*3D shapes 
+
+    m_world = Matrix::Identity;//The coordinates of the object (Origin)
+	//m_world = Matrix::CreateTranslation( 2.f, 1.f, 3.f); //The coordinates of the object
+    Matrix world = Matrix::CreateTranslation( 2.f, 1.f, 3.f);
+	//m_effect->SetWorld(m_world);
+
+	/*3D shapes 
     m_shape = GeometricPrimitive::CreateCone(context);
     m_shape = GeometricPrimitive::CreateSphere(context);
     m_shape = GeometricPrimitive::CreateCube(context);
@@ -339,6 +472,14 @@ void Game::CreateDeviceDependentResources()
 	m_model = Model::CreateFromCMO(device, L"cup.cmo", *m_fxFactory);
 	m_world = Matrix::Identity;
 
+	//Texture    
+	m_room = GeometricPrimitive::CreateBox(context,
+	    XMFLOAT3(ROOM_BOUNDS[0], ROOM_BOUNDS[1], ROOM_BOUNDS[2]),
+	    false, true);
+
+	DX::ThrowIfFailed(
+	    CreateDDSTextureFromFile(device, L"roomtexture.dds",
+	        nullptr, m_roomTex.ReleaseAndGetAddressOf()));
   
 }
 
@@ -353,12 +494,11 @@ void Game::CreateWindowSizeDependentResources()
     m_effect->SetProjection(proj);
 
     //3D object 
-    m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.f), Vector3::Zero, Vector3::UnitY);
-    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,float(size.right) / float(size.bottom), 0.1f, 10.f);
+    //m_view = Matrix::CreateLookAt(Vector3(3.f, 3.f, 3.f), Vector3::Zero, Vector3::UnitY);
+    //m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,float(size.right) / float(size.bottom), 0.1f, 10.f);
+    
+	m_proj = Matrix::CreatePerspectiveFieldOfView(XMConvertToRadians(70.f),float(size.right) / float(size.bottom), 0.01f, 100.f);
 
-    //Grid
-
-    m_proj = Matrix::CreatePerspectiveFieldOfView(XM_PI / 4.f,float(size.right) / float(size.bottom), 0.2f, 10.f);
 
 
     //Multisampling
@@ -401,7 +541,6 @@ void Game::CreateWindowSizeDependentResources()
     m_effect->SetView(m_view);
     m_effect->SetProjection(m_proj);
 
-    //Modeling
 	
 }
 
@@ -433,6 +572,10 @@ void Game::OnDeviceLost()
     m_states.reset();
 	m_fxFactory.reset();
 	m_model.reset();
+
+    //Texture
+    m_room.reset();
+	m_roomTex.Reset();
 }
 
 void Game::OnDeviceRestored()

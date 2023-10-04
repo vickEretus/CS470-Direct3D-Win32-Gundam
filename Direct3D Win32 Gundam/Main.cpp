@@ -217,6 +217,38 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             {
                 game->OnDeactivated();
             }
+        	Keyboard::ProcessMessage(message, wParam, lParam);
+        	Mouse::ProcessMessage(message, wParam, lParam);
+        	break;
+
+			case WM_ACTIVATE:
+			case WM_INPUT:
+			case WM_MOUSEMOVE:
+            case WM_MOUSEACTIVATE:
+				// When you click activate the window, we want Mouse to ignore it.
+				return MA_ACTIVATEANDEAT;
+			case WM_LBUTTONDOWN:
+			case WM_LBUTTONUP:
+			case WM_RBUTTONDOWN:
+			case WM_RBUTTONUP:
+			case WM_MBUTTONDOWN:
+			case WM_MBUTTONUP:
+			case WM_MOUSEWHEEL:
+			case WM_XBUTTONDOWN:
+			case WM_XBUTTONUP:
+			case WM_MOUSEHOVER:
+			    Mouse::ProcessMessage(message, wParam, lParam);
+			    break;
+
+			case WM_KEYDOWN:
+			case WM_KEYUP:
+			case WM_SYSKEYUP:
+			    Keyboard::ProcessMessage(message, wParam, lParam);
+			    break;
+
+			
+			    
+
         }
         break;
 
@@ -245,6 +277,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
         break;
 
     case WM_SYSKEYDOWN:
+        Keyboard::ProcessMessage(message, wParam, lParam);
         if (wParam == VK_RETURN && (lParam & 0x60000000) == 0x20000000)
         {
             // Implements the classic ALT+ENTER fullscreen toggle
@@ -273,6 +306,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
             }
 
             s_fullscreen = !s_fullscreen;
+
+
         }
         break;
 
