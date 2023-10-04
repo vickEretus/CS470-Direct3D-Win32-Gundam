@@ -99,8 +99,24 @@ private:
     Microsoft::WRL::ComPtr<ID3D11RenderTargetView> m_offscreenRenderTargetSRV;
     Microsoft::WRL::ComPtr<ID3D11DepthStencilView> m_depthStencilSRV;
 
-
+    //Modeling
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
 	std::unique_ptr<DirectX::Model> m_model;
+    //Mouse and keyboard
+    std::unique_ptr<DirectX::Keyboard> m_keyboard;
+	std::unique_ptr<DirectX::Mouse> m_mouse;
+
+    std::unique_ptr<DirectX::GeometricPrimitive> m_room;
+
+	float m_pitch;
+	float m_yaw;
+
+	DirectX::SimpleMath::Vector3 m_cameraPos;
+
+	DirectX::SimpleMath::Color m_roomColor;
+    Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_roomTex;
+
+	DirectX::Keyboard::KeyboardStateTracker m_keys;
+	DirectX::Mouse::ButtonStateTracker m_mouseButtons;
 
 };
