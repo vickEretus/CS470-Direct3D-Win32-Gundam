@@ -52,6 +52,8 @@ private:
 
     void Clear();
 
+
+
     void CreateDeviceDependentResources();
     void CreateWindowSizeDependentResources();
 

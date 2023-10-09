@@ -21,7 +21,7 @@ namespace
 {
    const XMVECTORF32 START_POSITION = { 0.f, 0.25f, -3.f, 0.f };
     //The Starting position of the Camera
-   const XMVECTORF32 ROOM_BOUNDS = { 8.f, 6.f, 12.f, 0.f };
+   const XMVECTORF32 ROOM_BOUNDS = { 80.f, 60.f, 120.f, 0.f };
    constexpr float ROTATION_GAIN = 0.004f;
    constexpr float MOVEMENT_GAIN = 0.07f;
 
@@ -35,15 +35,15 @@ Game::Game() noexcept(false):
     m_cameraPos(START_POSITION),
     m_roomColor(Colors::White)
 {
-    //m_deviceResources = std::make_unique<DX::DeviceResources>(); No Multisampling
-    //Multisampling
+	//m_deviceResources = std::make_unique<DX::DeviceResources>(); No Multisampling
+	//Multisampling
 
-    m_deviceResources = std::make_unique<DX::DeviceResources>(
-        DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_UNKNOWN);
-    // TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
-    //   Add DX::DeviceResources::c_AllowTearing to opt-in to variable rate displays.
-    //   Add DX::DeviceResources::c_EnableHDR for HDR10 display.
-    m_deviceResources->RegisterDeviceNotify(this);
+	m_deviceResources = std::make_unique<DX::DeviceResources>(
+		DXGI_FORMAT_B8G8R8A8_UNORM, DXGI_FORMAT_UNKNOWN);
+	// TODO: Provide parameters for swapchain format, depth/stencil format, and backbuffer count.
+	//   Add DX::DeviceResources::c_AllowTearing to opt-in to variable rate displays.
+	//   Add DX::DeviceResources::c_EnableHDR for HDR10 display.
+	m_deviceResources->RegisterDeviceNotify(this);
 }
 
 // Initialize the Direct3D resources required to run.
@@ -88,6 +88,8 @@ void Game::Update(DX::StepTimer const& timer)
     static_cast<float>(timer.GetTotalSeconds());
 
 	const auto mouse = m_mouse->GetState();
+
+   
     
     m_mouseButtons.Update(mouse);
 	if (mouse.positionMode == Mouse::MODE_RELATIVE)
@@ -107,6 +109,13 @@ void Game::Update(DX::StepTimer const& timer)
         //Comment this to have a swival 
 
 	m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
+
+    //Moves all the objects to the postion  
+	//m_world = Matrix::CreateTranslation(Vector3(1.0f, 1.0f, 1.0f));
+
+
+    Matrix world = Matrix::CreateTranslation( 2.f, 1.f, 3.f);
+	m_effect->SetWorld(world);
 
 	    // limit pitch to straight up or straight down
 	constexpr float limit = XM_PIDIV2 - 0.01f;
@@ -219,71 +228,62 @@ void Game::Render()
     m_deviceResources->PIXBeginEvent(L"Render");
     auto context = m_deviceResources->GetD3DDeviceContext();
 
-    //Creates new background
-    m_spriteBatch->Begin();
-
-    m_spriteBatch->Draw(m_background.Get(), m_fullscreenRect);
-
-    m_spriteBatch->End();
-
-    context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
+	context->OMSetBlendState(m_states->Opaque(), nullptr, 0xFFFFFFFF);
     context->OMSetDepthStencilState(m_states->DepthNone(), 0);
-
-	//Anti-aliased lines
+    //Anti-aliased lines
     context->RSSetState(m_raster.Get());
 
-
     m_effect->Apply(context);
 
     context->IASetInputLayout(m_inputLayout.Get());
 
-	//3D object 
-	m_shape->Draw(m_world, m_view, m_proj, Colors::White, m_texture.Get());
-    //Grid
-    m_effect->SetWorld(m_world);
+     // Draw procedurally generated dynamic grid
+    const XMVECTORF32 xaxis = { 20.f, 0.f, 0.f };
+    const XMVECTORF32 yaxis = { 0.f, 0.f, 20.f };
 
-    m_effect->Apply(context);
 
-    context->IASetInputLayout(m_inputLayout.Get());
-    
-    
-    //m_batch->Begin();
 
-    //Vector3 xaxis(2.f, 0.f, 0.f);
-    //Vector3 yaxis(0.f, 0.f, 2.f);
-    //Vector3 origin = Vector3::Zero;
 
-    //constexpr size_t divisions = 20;
 
-    //for (size_t i = 0; i <= divisions; ++i)
-    //{
-    //    float fPercent = float(i) / float(divisions);
-    //    fPercent = (fPercent * 2.0f) - 1.0f;
 
-    //    Vector3 scale = xaxis * fPercent + origin;
 
-    //    VertexPositionColor v1(scale - yaxis, Colors::White);
-    //    VertexPositionColor v2(scale + yaxis, Colors::White);
-    //    m_batch->DrawLine(v1, v2);
-    //}
+	//Creates new background
+    m_deviceResources->PIXBeginEvent(L"Draw Background");
+    m_spriteBatch->Begin();
+    m_spriteBatch->Draw(m_background.Get(), m_fullscreenRect);
+    m_spriteBatch->End();
+    m_deviceResources->PIXEndEvent();
 
-    //for (size_t i = 0; i <= divisions; i++)
-    //{
-    //    float fPercent = float(i) / float(divisions);
-    //    fPercent = (fPercent * 2.0f) - 1.0f;
+   
 
-    //    Vector3 scale = yaxis * fPercent + origin;
+	
 
-    //    VertexPositionColor v1(scale - xaxis, Colors::White);
-    //    VertexPositionColor v2(scale + xaxis, Colors::White);
-    //    m_batch->DrawLine(v1, v2);
-    //}
+	//3D object
+	   /* m_deviceResources->PIXBeginEvent(L"Draw Sphere");
+	    XMMATRIX local = m_world * Matrix::CreateTranslation(0.f, 1.5f, 0.f);
+		m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
+		m_deviceResources->PIXEndEvent();*/
 
-    //m_batch->End(); 
+	//3D object for loop test
+    for (int k=0; k < 5; k++){
+	    for (int j=0; j < 5; j++)
+	    {
+		    for (int i=0; i < 5; i++){
+			    m_deviceResources->PIXBeginEvent(L"Draw Sphere");
+			    XMMATRIX local = m_world * Matrix::CreateTranslation(k+(-2.f), i+(-2.f), j+(0.f));
+				m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
+				m_deviceResources->PIXEndEvent();
+			}
+	    }
+    }
 
-        //Model
+	//Grid
+   
+
+	//Cup Model
+	m_deviceResources->PIXBeginEvent(L"Draw Cup Model");
     m_model->Draw(context, *m_states, m_world, m_view, m_proj);
-    
+    m_deviceResources->PIXEndEvent();
     //Texture room
     m_room->Draw(Matrix::Identity, m_view, m_proj,m_roomColor, m_roomTex.Get());
 
@@ -332,6 +332,8 @@ void Game::Clear()
     m_deviceResources->PIXEndEvent();
 }
 #pragma endregion
+
+
 
 #pragma region Message Handlers
 // Message handlers
@@ -417,9 +419,6 @@ void Game::CreateDeviceDependentResources()
     m_shape = GeometricPrimitive::CreateSphere(context);
 
     m_world = Matrix::Identity;//The coordinates of the object (Origin)
-	//m_world = Matrix::CreateTranslation( 2.f, 1.f, 3.f); //The coordinates of the object
-    Matrix world = Matrix::CreateTranslation( 2.f, 1.f, 3.f);
-	//m_effect->SetWorld(m_world);
 
 	/*3D shapes 
     m_shape = GeometricPrimitive::CreateCone(context);
