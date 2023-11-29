@@ -6,6 +6,7 @@
 
 #include "DeviceResources.h"
 #include "StepTimer.h"
+#include "TextConsole.h"
 
 
 // A basic game implementation that creates a D3D11 device and
@@ -76,7 +77,6 @@ private:
     Microsoft::WRL::ComPtr<ID3D11ShaderResourceView> m_background;
 
     //Drawing a triangle
-
     using VertexType = DirectX::VertexPositionColor;
 
     std::unique_ptr<DirectX::CommonStates> m_states;
@@ -103,7 +103,11 @@ private:
 
     //Modeling
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
+	//std::unique_ptr<DirectX::EffectFactory> m_fxFactory;
+
 	std::unique_ptr<DirectX::Model> m_model;
+    std::unique_ptr<DirectX::Model> m_heli;
+    std::unique_ptr<DirectX::Model> m_tokyo;
     //Mouse and keyboard
     std::unique_ptr<DirectX::Keyboard> m_keyboard;
 	std::unique_ptr<DirectX::Mouse> m_mouse;

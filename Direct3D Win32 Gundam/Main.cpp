@@ -226,7 +226,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			case WM_MOUSEMOVE:
             case WM_MOUSEACTIVATE:
 				// When you click activate the window, we want Mouse to ignore it.
-				return MA_ACTIVATEANDEAT;
+				//return MA_ACTIVATEANDEAT;
 			case WM_LBUTTONDOWN:
 			case WM_LBUTTONUP:
 			case WM_RBUTTONDOWN:

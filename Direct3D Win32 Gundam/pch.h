@@ -82,6 +82,7 @@
 #include "SpriteFont.h"
 #include "VertexTypes.h"
 #include "WICTextureLoader.h"
+#include "TextConsole.h"
 
 namespace DX
 {

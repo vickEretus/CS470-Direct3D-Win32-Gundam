@@ -5,6 +5,9 @@
 #include "pch.h"
 #include "Game.h"
 
+#include <iostream>
+#include <assert.h>
+
 using namespace DirectX;
 using namespace DirectX::SimpleMath;
 
@@ -15,6 +18,7 @@ extern void ExitGame() noexcept;
 using namespace DirectX;
 
 using Microsoft::WRL::ComPtr;
+
 
 //Multisampling
 namespace
@@ -83,41 +87,12 @@ void Game::Tick()
 // Updates the world.
 void Game::Update(DX::StepTimer const& timer)
 {
+
 	static_cast<float>(timer.GetElapsedSeconds());
 
     static_cast<float>(timer.GetTotalSeconds());
 
-	const auto mouse = m_mouse->GetState();
-
-   
-    
-    m_mouseButtons.Update(mouse);
-	if (mouse.positionMode == Mouse::MODE_RELATIVE)
-	{
-		const Vector3 delta = Vector3(static_cast<float>(mouse.x), static_cast<float>(mouse.y), 0.f)
-	                    * ROTATION_GAIN;
-
-	    m_pitch -= delta.y;
-	    m_yaw -= delta.x;
-	}
-
-	m_mouse->SetMode(mouse.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
-
-
-    //Grid
-    m_world = Matrix::CreateRotationY(cosf(static_cast<float>(timer.GetTotalSeconds())));
-        //Comment this to have a swival 
-
-	m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
-
-    //Moves all the objects to the postion  
-	//m_world = Matrix::CreateTranslation(Vector3(1.0f, 1.0f, 1.0f));
-
-
-    Matrix world = Matrix::CreateTranslation( 2.f, 1.f, 3.f);
-	m_effect->SetWorld(world);
-
-	    // limit pitch to straight up or straight down
+    	    // limit pitch to straight up or straight down
 	constexpr float limit = XM_PIDIV2 - 0.01f;
 	m_pitch = std::max(-limit, m_pitch);
 	m_pitch = std::min(+limit, m_pitch);
@@ -142,7 +117,43 @@ void Game::Update(DX::StepTimer const& timer)
 	m_view = XMMatrixLookAtRH(m_cameraPos, lookAt, Vector3::Up);
 
 
+
+
+
+    auto mouse = m_mouse->GetState();
+
+	//if (mouse.middleButton)
+	//{
+
+
+	//}
 	
+
+	if (mouse.positionMode == Mouse::MODE_RELATIVE)
+	{   //mouse.positionMode == Mouse::MODE_RELATIVE
+		Vector3 delta = Vector3(float(mouse.x + 0.00075f), float(mouse.y + 0.00075f), 0.f)
+	                    * ROTATION_GAIN;
+       
+
+		m_yaw -= delta.x;
+        m_pitch -= delta.y;
+	}
+
+	m_mouse->SetMode(mouse.leftButton ? Mouse::MODE_RELATIVE : Mouse::MODE_ABSOLUTE);
+	m_mouseButtons.Update(mouse);
+
+    //Grid
+    m_world = Matrix::CreateRotationY(cosf(static_cast<float>(timer.GetTotalSeconds())));
+        //Comment this to have a swival 
+
+	m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
+
+    //Moves all the objects to the postion  
+
+
+    Matrix world = Matrix::CreateTranslation( 2.f, 1.f, 3.f);
+	m_effect->SetWorld(world);
+
 
 
 
@@ -162,22 +173,33 @@ void Game::Update(DX::StepTimer const& timer)
 	Vector3 move = Vector3::Zero;
 
 	if (kb.Up)
-	    move.y += 1.f;
+	    //move.y += 1.f;
+		m_pitch += 0.0075f;
 
 	if (kb.Down)
-	    move.y -= 1.f;
-
+	    //move.y -= 1.f;
+		m_pitch -= 0.0075f;
+    if (kb.Left)
+        m_yaw += 0.0075f;
+	if(kb.Right)
+        m_yaw -= 0.0075f;
 	if (kb.A)
 	    move.x += 1.f;
 
 	if (kb.D)
 	    move.x -= 1.f;
 
-	if (kb.W)
+	if (kb.W){
 	    move.z += 1.f;
-
+		if (m_pitch >= 180.f)
+		{
+			move.z -= 1.f;
+		}
+    }
 	if (kb.S)
 	    move.z -= 1.f;
+
+    //Add condtional where when the pitch is 180, flip the 
 
 	Quaternion q = Quaternion::CreateFromYawPitchRoll(m_yaw, m_pitch, 0.f);
 
@@ -254,10 +276,20 @@ void Game::Render()
     m_spriteBatch->End();
     m_deviceResources->PIXEndEvent();
 
-   
+
+    /// NOTE Draw function: How it works 
+	/// m_world controls translations of the object
+	///
+	///	m_view translate the vertices from world space to camera/view space
+	///
+	/// m_proj translates those coordinates from camera/view space to projection space.
+	/// Projection space coordinates specify where the vertex is
+	/// located on your display/monitor as well as containing depth information
+	/// (i.e. How far away from the camera the point is)
+	///	https://gamedev.stackexchange.com/questions/110342/world-view-projection-matrix
+	///
 
 	
-
 	//3D object
 	   /* m_deviceResources->PIXBeginEvent(L"Draw Sphere");
 	    XMMATRIX local = m_world * Matrix::CreateTranslation(0.f, 1.5f, 0.f);
@@ -269,10 +301,15 @@ void Game::Render()
 	    for (int j=0; j < 5; j++)
 	    {
 		    for (int i=0; i < 5; i++){
-			    m_deviceResources->PIXBeginEvent(L"Draw Sphere");
-			    XMMATRIX local = m_world * Matrix::CreateTranslation(k+(-2.f), i+(-2.f), j+(0.f));
-				m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
-				m_deviceResources->PIXEndEvent();
+			    if (k !=2 && i != 2 && j != 0)
+			    {
+				    m_deviceResources->PIXBeginEvent(L"Draw Sphere");
+				    XMMATRIX local = m_world * Matrix::CreateTranslation(k+(-2.f), i+(-2.f), j+(0.f));
+
+					m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
+					m_deviceResources->PIXEndEvent(); 
+			    }
+				   
 			}
 	    }
     }
@@ -281,18 +318,25 @@ void Game::Render()
    
 
 	//Cup Model
+
+	
 	m_deviceResources->PIXBeginEvent(L"Draw Cup Model");
     m_model->Draw(context, *m_states, m_world, m_view, m_proj);
     m_deviceResources->PIXEndEvent();
     //Texture room
-    m_room->Draw(Matrix::Identity, m_view, m_proj,m_roomColor, m_roomTex.Get());
+	m_deviceResources->PIXBeginEvent(L"Draw Room");
+	m_room->Draw(Matrix::Identity, m_view, m_proj,m_roomColor, m_roomTex.Get());
+	m_deviceResources->PIXEndEvent();
 
+	m_deviceResources->PIXBeginEvent(L"Draw Heli");
+	XMMATRIX heli_trans = m_world * Matrix::CreateScale(1.0f) * Matrix::CreateTranslation(2.f, 2.f, 2.f);
+	m_heli->Draw(context, *m_states, heli_trans, m_view, m_proj);
+	m_deviceResources->PIXEndEvent();
 
-
-
-
-
-
+	//m_deviceResources->PIXBeginEvent(L"Draw Tokyo");
+	//XMMATRIX tokyo_trans = m_world * Matrix::CreateScale(0.05f) * Matrix::CreateTranslation(-2.f, -2.f, -2.f);
+	//m_tokyo->Draw(context, *m_states, tokyo_trans, m_view, m_proj);
+	//m_deviceResources->PIXEndEvent();
 
 
     //Mutlisampling
@@ -305,6 +349,237 @@ void Game::Render()
     m_deviceResources->Present();
 
 }
+
+
+
+#pragma region TextConsole
+
+
+	TextConsole::TextConsole()
+	    : m_textColor(1.f, 1.f, 1.f, 1.f)
+	{
+	    Clear();
+	}
+
+	TextConsole::TextConsole(ID3D11DeviceContext* context, const wchar_t* fontName)
+	    : m_textColor(1.f, 1.f, 1.f, 1.f)
+	{
+	    RestoreDevice(context, fontName);
+
+	    Clear();
+	}
+
+	void TextConsole::Render()
+	{
+	    std::lock_guard<std::mutex> lock(m_mutex);
+
+	    float lineSpacing = m_font->GetLineSpacing();
+
+	    float x = float(m_layout.left);
+	    float y = float(m_layout.top);
+
+	    XMVECTOR color = XMLoadFloat4(&m_textColor);
+
+	    m_batch->Begin();
+
+	    unsigned int textLine = unsigned int(m_currentLine - m_rows + m_rows + 1) % m_rows;
+
+	    for (unsigned int line = 0; line < m_rows; ++line)
+	    {
+	        XMFLOAT2 pos(x, y + lineSpacing * float(line));
+
+	        if (*m_lines[textLine])
+	        {
+	            m_font->DrawString(m_batch.get(), m_lines[textLine], pos, color);
+	        }
+
+	        textLine = unsigned int(textLine + 1) % m_rows;
+	    }
+
+	    m_batch->End();
+	}
+
+	void TextConsole::Clear()
+	{
+	    if (m_buffer)
+	    {
+	        memset(m_buffer.get(), 0, sizeof(wchar_t) * (m_columns + 1) * m_rows);
+	    }
+
+	    m_currentColumn = m_currentLine = 0;
+	}
+
+	void TextConsole::Write(const wchar_t *str)
+	{
+	    std::lock_guard<std::mutex> lock(m_mutex);
+
+	    ProcessString(str);
+	}
+
+	void TextConsole::WriteLine(const wchar_t *str)
+	{
+	    std::lock_guard<std::mutex> lock(m_mutex);
+
+	    ProcessString(str);
+	    IncrementLine();
+	}
+
+	void TextConsole::Format(const wchar_t* strFormat, ...)
+	{
+	    std::lock_guard<std::mutex> lock(m_mutex);
+
+	    va_list argList;
+	    va_start(argList, strFormat);
+
+	    auto len = size_t(_vscwprintf(strFormat, argList) + 1);
+
+	    if (m_tempBuffer.size() < len)
+	        m_tempBuffer.resize(len);
+
+	    memset(m_tempBuffer.data(), 0, sizeof(wchar_t) * len);
+
+	    vswprintf_s(m_tempBuffer.data(), m_tempBuffer.size(), strFormat, argList);
+
+	    va_end(argList);
+
+	    ProcessString(m_tempBuffer.data());
+	}
+
+	void TextConsole::SetWindow(const RECT& layout)
+	{
+	    m_layout = layout;
+
+	    assert(m_font != 0);
+
+	    float lineSpacing = m_font->GetLineSpacing();
+	    unsigned int rows = std::max<unsigned int>(1, static_cast<unsigned int>(float(layout.bottom - layout.top) / lineSpacing));
+
+	    RECT fontLayout = m_font->MeasureDrawBounds(L"X", XMFLOAT2(0,0));
+	    unsigned int columns = std::max<unsigned int>(1, static_cast<unsigned int>(float(layout.right - layout.left) / float(fontLayout.right - fontLayout.left)));
+
+	    std::unique_ptr<wchar_t[]> buffer(new wchar_t[(columns + 1) * rows]);
+	    memset(buffer.get(), 0, sizeof(wchar_t) * (columns + 1) * rows);
+
+	    std::unique_ptr<wchar_t*[]> lines(new wchar_t*[rows]);
+	    for (unsigned int line = 0; line < rows; ++line)
+	    {
+	        lines[line] = buffer.get() + (columns + 1) * line;
+	    }
+
+	    if (m_lines)
+	    {
+	        unsigned int c = std::min<unsigned int>(columns, m_columns);
+	        unsigned int r = std::min<unsigned int>(rows, m_rows);
+
+	        for (unsigned int line = 0; line < r; ++line)
+	        {
+	            memcpy(lines[line], m_lines[line], c * sizeof(wchar_t));
+	        }
+	    }
+
+	    std::swap(columns, m_columns);
+	    std::swap(rows, m_rows);
+	    std::swap(buffer, m_buffer);
+	    std::swap(lines, m_lines);
+	}
+
+	void TextConsole::ReleaseDevice()
+	{
+	    m_batch.reset();
+	    m_font.reset();
+	    m_context.Reset();
+	}
+
+	void TextConsole::RestoreDevice(ID3D11DeviceContext* context, const wchar_t* fontName)
+	{
+	    m_context = context;
+
+	    m_batch = std::make_unique<SpriteBatch>(context);
+
+	    ComPtr<ID3D11Device> device;
+	    context->GetDevice(device.GetAddressOf());
+
+	    m_font = std::make_unique<SpriteFont>(device.Get(), fontName);
+
+	    m_font->SetDefaultCharacter(L' ');
+	}
+
+	void TextConsole::SetViewport(const D3D11_VIEWPORT& viewPort)
+	{
+	    if (m_batch)
+	    {
+	        m_batch->SetViewport(viewPort);
+	    }
+	}
+
+
+	void TextConsole::SetRotation(DXGI_MODE_ROTATION rotation)
+	{
+	    if (m_batch)
+	    {
+	        m_batch->SetRotation(rotation);
+	    }
+	}
+
+	void TextConsole::ProcessString(const wchar_t* str)
+	{
+	    if (!m_lines)
+	        return;
+
+	    float width = float(m_layout.right - m_layout.left);
+
+	    for (const wchar_t* ch = str; *ch != 0; ++ch)
+	    {
+	        if (*ch == '\n')
+	        {
+	            IncrementLine();
+	            continue;
+	        }
+
+	        bool increment = false;
+
+	        if (m_currentColumn >= m_columns)
+	        {
+	            increment = true;
+	        }
+	        else
+	        {
+	            m_lines[m_currentLine][m_currentColumn] = *ch;
+
+	            auto fontSize = m_font->MeasureString(m_lines[m_currentLine]);
+	            if (XMVectorGetX(fontSize) > width)
+	            {
+	                m_lines[m_currentLine][m_currentColumn] = L'\0';
+
+	                increment = true;
+	            }
+	        }
+
+	        if (increment)
+	        {
+	            IncrementLine();
+	            m_lines[m_currentLine][0] = *ch;
+	        }
+
+	        ++m_currentColumn;
+	    }
+	}
+
+	void TextConsole::IncrementLine()
+	{
+	    if (!m_lines)
+	        return;
+
+	    m_currentLine = (m_currentLine + 1) % m_rows;
+	    m_currentColumn = 0;
+	    memset(m_lines[m_currentLine], 0, sizeof(wchar_t) * (m_columns + 1));
+	}
+
+
+#pragma endregion
+
+
+
 
 // Helper method to clear the back buffers.
 void Game::Clear()
@@ -462,13 +737,29 @@ void Game::CreateDeviceDependentResources()
         m_raster.ReleaseAndGetAddressOf()));
 
 
-    //Modeling
+    //Model - Cup
     m_states = std::make_unique<CommonStates>(device);
 
 	m_fxFactory = std::make_unique<EffectFactory>(device);
 
 
 	m_model = Model::CreateFromCMO(device, L"cup.cmo", *m_fxFactory);
+	m_world = Matrix::Identity;
+
+
+	//Model - Heli
+
+	
+	m_states = std::make_unique<CommonStates>(device);
+	m_fxFactory = std::make_unique<EffectFactory>(device);
+	m_heli = Model::CreateFromCMO(device,L"heli.cmo", *m_fxFactory);
+
+	m_world = Matrix::Identity;
+
+	m_states = std::make_unique<CommonStates>(device);
+	m_fxFactory = std::make_unique<EffectFactory>(device);
+	//m_tokyo = Model::CreateFromCMO(device,L"heli.cmo", *m_fxFactory);
+
 	m_world = Matrix::Identity;
 
 	//Texture    
@@ -571,6 +862,7 @@ void Game::OnDeviceLost()
     m_states.reset();
 	m_fxFactory.reset();
 	m_model.reset();
+	m_heli.reset();
 
     //Texture
     m_room.reset();
@@ -584,3 +876,5 @@ void Game::OnDeviceRestored()
     CreateWindowSizeDependentResources();
 }
 #pragma endregion
+
+

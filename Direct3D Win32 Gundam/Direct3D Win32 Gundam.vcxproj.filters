@@ -8,6 +8,15 @@
       <UniqueIdentifier>f66e4145-88b9-4f20-beb5-05d05c1ab9cd</UniqueIdentifier>
       <Extensions>ico;cur;bmp;dds;dlg;fbx;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tga;tiff;tif;png;wav;mfcribbon-ms</Extensions>
     </Filter>
+    <Filter Include="Assets\Heli">
+      <UniqueIdentifier>{8513a0df-6442-41cb-bacd-b7ec50062332}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Basic">
+      <UniqueIdentifier>{ddd09055-3d74-47c3-ab6e-d8a11c9371fa}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\Tokyo">
+      <UniqueIdentifier>{4e97ddf3-e8b6-4402-8a0a-d949b662b92c}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="pch.h" />
@@ -18,6 +27,7 @@
     <ClInclude Include="DeviceResources.h">
       <Filter>Common</Filter>
     </ClInclude>
+    <ClInclude Include="TextConsole.h" />
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="pch.cpp" />
@@ -34,20 +44,23 @@
     <Image Include="directx.ico">
       <Filter>Assets</Filter>
     </Image>
-    <Image Include="Image.png">
-      <Filter>Assets</Filter>
+    <Image Include="roomtexture.dds">
+      <Filter>Assets\Basic</Filter>
     </Image>
     <Image Include="cat.png">
-      <Filter>Assets</Filter>
-    </Image>
-    <Image Include="sunset.jpg">
-      <Filter>Assets</Filter>
+      <Filter>Assets\Basic</Filter>
     </Image>
     <Image Include="cup.jpg">
-      <Filter>Assets</Filter>
+      <Filter>Assets\Basic</Filter>
     </Image>
-    <Image Include="roomtexture.dds">
-      <Filter>Assets</Filter>
+    <Image Include="sunset.jpg">
+      <Filter>Assets\Basic</Filter>
+    </Image>
+    <Image Include="1K_GunshipTXTR.png">
+      <Filter>Assets\Heli</Filter>
+    </Image>
+    <Image Include="512K_HellfireTXTR.png">
+      <Filter>Assets\Heli</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>
@@ -58,7 +71,13 @@
   <ItemGroup>
     <None Include="packages.config" />
     <None Include="cup.cmo">
-      <Filter>Assets</Filter>
+      <Filter>Assets\Basic</Filter>
+    </None>
+    <None Include="heli.mtl">
+      <Filter>Assets\Heli</Filter>
+    </None>
+    <None Include="heli.cmo">
+      <Filter>Assets\Heli</Filter>
     </None>
   </ItemGroup>
 </Project>
