@@ -1,0 +1,80 @@
+# Blender 3.3.1 MTL File: 'ball.blend'
+# www.blender.org
+
+newmtl BLACK_3.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 1.000000 BLACK_3_Normal.png
+
+newmtl Big_gun.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Big_gun_BaseColor.png
+map_Bump -bm 1.000000 Big_gun_Normal.png
+
+newmtl Black.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd Black_BaseColor.png
+map_Bump -bm 1.000000 Black__Normal.png
+
+newmtl Glass.001
+Ns 0.027880
+Ka 1.000000 1.000000 1.000000
+Kd 0.005084 0.021964 0.008635
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 0.772902
+illum 9
+
+newmtl red_ball.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd red_ball_BaseColor.png
+map_Bump -bm 1.000000 red_ball_Normal.png
+
+
+newmtl white_ball.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Kd 0.800000 0.800000 0.800000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Bump -bm 1.000000 white_ball_Normal.png
+
+
+newmtl white_ball_2.001
+Ns 250.000000
+Ka 1.000000 1.000000 1.000000
+Ks 0.500000 0.500000 0.500000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 2
+map_Kd white_ball_2_BaseColor.png
+map_Bump -bm 1.000000 white_ball_2_Normal.png

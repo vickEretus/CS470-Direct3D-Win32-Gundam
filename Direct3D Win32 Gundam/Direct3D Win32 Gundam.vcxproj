@@ -208,6 +208,28 @@
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
+    <Image Include="..\..\Ball\textures\Big_gun_BaseColor.png" />
+    <Image Include="..\..\Ball\textures\Big_gun_Metallic.png" />
+    <Image Include="..\..\Ball\textures\Big_gun_Normal.png" />
+    <Image Include="..\..\Ball\textures\Big_gun_Roughness.png" />
+    <Image Include="..\..\Ball\textures\BLACK_3_BaseColor.png" />
+    <Image Include="..\..\Ball\textures\BLACK_3_Metallic.png" />
+    <Image Include="..\..\Ball\textures\BLACK_3_Normal.png" />
+    <Image Include="..\..\Ball\textures\BLACK_3_Roughness.png" />
+    <Image Include="..\..\Ball\textures\Black__BaseColor.png" />
+    <Image Include="..\..\Ball\textures\Black__Metallic.png" />
+    <Image Include="..\..\Ball\textures\Black__Normal.png" />
+    <Image Include="..\..\Ball\textures\red_ball_BaseColor.png" />
+    <Image Include="..\..\Ball\textures\red_ball_Metallic.png" />
+    <Image Include="..\..\Ball\textures\red_ball_Normal.png" />
+    <Image Include="..\..\Ball\textures\red_ball_Roughness.png" />
+    <Image Include="..\..\Ball\textures\white_ball_2_BaseColor.png" />
+    <Image Include="..\..\Ball\textures\white_ball_2_Metallic.png" />
+    <Image Include="..\..\Ball\textures\white_ball_2_Normal.png" />
+    <Image Include="..\..\Ball\textures\white_ball_2_Roughness.png" />
+    <Image Include="..\..\Ball\textures\white_ball_BaseColor.png" />
+    <Image Include="..\..\Ball\textures\white_ball_Metallic.png" />
+    <Image Include="..\..\Ball\textures\white_ball_Normal.png" />
     <Image Include="1K_GunshipTXTR.png" />
     <Image Include="512K_HellfireTXTR.png" />
     <Image Include="cat.png" />
@@ -220,10 +242,29 @@
     <Manifest Include="settings.manifest" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="ball.cmo" />
+    <None Include="ball.mtl" />
+    <None Include="ball.sdkmesh" />
+    <None Include="cityblock.sdkmesh" />
     <None Include="cup.cmo" />
+    <None Include="gundam.cmo" />
+    <None Include="gundam.sdkmesh" />
+    <None Include="gundam.vbo" />
     <None Include="heli.cmo" />
     <None Include="heli.mtl" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <MeshContentTask Include="ball.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </MeshContentTask>
+  </ItemGroup>
+  <ItemGroup>
+    <MeshContentTask Include="gundam.obj">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|x64'">true</ExcludedFromBuild>
+      <FileType>Document</FileType>
+    </MeshContentTask>
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

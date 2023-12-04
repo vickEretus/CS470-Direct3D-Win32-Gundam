@@ -14,8 +14,11 @@
     <Filter Include="Assets\Basic">
       <UniqueIdentifier>{ddd09055-3d74-47c3-ab6e-d8a11c9371fa}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Assets\Tokyo">
+    <Filter Include="Assets\City">
       <UniqueIdentifier>{4e97ddf3-e8b6-4402-8a0a-d949b662b92c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="Assets\MobileSuit">
+      <UniqueIdentifier>{677a0f98-6207-40e7-b561-8adfa6184ae0}</UniqueIdentifier>
     </Filter>
   </ItemGroup>
   <ItemGroup>
@@ -62,6 +65,72 @@
     <Image Include="512K_HellfireTXTR.png">
       <Filter>Assets\Heli</Filter>
     </Image>
+    <Image Include="..\..\Ball\textures\Big_gun_BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Big_gun_Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Big_gun_Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Big_gun_Roughness.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Black__BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Black__Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\Black__Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\BLACK_3_BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\BLACK_3_Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\BLACK_3_Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\BLACK_3_Roughness.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\red_ball_BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\red_ball_Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\red_ball_Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\red_ball_Roughness.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_2_BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_2_Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_2_Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_2_Roughness.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_BaseColor.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_Metallic.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
+    <Image Include="..\..\Ball\textures\white_ball_Normal.png">
+      <Filter>Assets\MobileSuit</Filter>
+    </Image>
   </ItemGroup>
   <ItemGroup>
     <Manifest Include="settings.manifest">
@@ -79,5 +148,34 @@
     <None Include="heli.cmo">
       <Filter>Assets\Heli</Filter>
     </None>
+    <None Include="cityblock.sdkmesh">
+      <Filter>Assets\City</Filter>
+    </None>
+    <None Include="ball.sdkmesh">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+    <None Include="gundam.sdkmesh">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+    <None Include="ball.cmo">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+    <None Include="ball.mtl">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+    <None Include="gundam.cmo">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+    <None Include="gundam.vbo">
+      <Filter>Assets\MobileSuit</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <MeshContentTask Include="ball.obj">
+      <Filter>Assets\MobileSuit</Filter>
+    </MeshContentTask>
+    <MeshContentTask Include="gundam.obj">
+      <Filter>Assets\MobileSuit</Filter>
+    </MeshContentTask>
   </ItemGroup>
 </Project>

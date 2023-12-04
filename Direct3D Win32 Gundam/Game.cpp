@@ -143,10 +143,10 @@ void Game::Update(DX::StepTimer const& timer)
 	m_mouseButtons.Update(mouse);
 
     //Grid
-    m_world = Matrix::CreateRotationY(cosf(static_cast<float>(timer.GetTotalSeconds())));
+    //m_world = Matrix::CreateRotationY(cosf(static_cast<float>(timer.GetTotalSeconds())));
         //Comment this to have a swival 
 
-	m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
+	//m_world = Matrix::CreateRotationZ(cosf(static_cast<float>(timer.GetTotalSeconds()) * 2.f));
 
     //Moves all the objects to the postion  
 
@@ -171,14 +171,12 @@ void Game::Update(DX::StepTimer const& timer)
 	}
 
 	Vector3 move = Vector3::Zero;
-
+	Vector3 old_move = Vector3::Zero;
 	if (kb.Up)
-	    //move.y += 1.f;
-		m_pitch += 0.0075f;
+		move.y += 1.f;
 
 	if (kb.Down)
-	    //move.y -= 1.f;
-		m_pitch -= 0.0075f;
+	    move.y -= 1.f;
     if (kb.Left)
         m_yaw += 0.0075f;
 	if(kb.Right)
@@ -189,8 +187,19 @@ void Game::Update(DX::StepTimer const& timer)
 	if (kb.D)
 	    move.x -= 1.f;
 
+	old_move.y = move.y;
+	old_move.x = move.x;
+
 	if (kb.W){
 	    move.z += 1.f;
+	    if (move.y != old_move.y )
+	    {
+		    move.y -= 1.f;
+	    }
+		if (move.x != old_move.x )
+	    {
+		    move.x -= 1.f;
+	    }
 		if (m_pitch >= 180.f)
 		{
 			move.z -= 1.f;
@@ -198,6 +207,8 @@ void Game::Update(DX::StepTimer const& timer)
     }
 	if (kb.S)
 	    move.z -= 1.f;
+		move.y += 0;
+		move.x += 0;
 
     //Add condtional where when the pitch is 180, flip the 
 
@@ -297,23 +308,27 @@ void Game::Render()
 		m_deviceResources->PIXEndEvent();*/
 
 	//3D object for loop test
-    for (int k=0; k < 5; k++){
-	    for (int j=0; j < 5; j++)
-	    {
-		    for (int i=0; i < 5; i++){
-			    if (k !=2 && i != 2 && j != 0)
-			    {
-				    m_deviceResources->PIXBeginEvent(L"Draw Sphere");
-				    XMMATRIX local = m_world * Matrix::CreateTranslation(k+(-2.f), i+(-2.f), j+(0.f));
+   // for (int k=0; k < 5; k++){
+	  //  for (int j=0; j < 5; j++)
+	  //  {
+		 //   for (int i=0; i < 5; i++){
+			//    if (k !=2 && i != 2 && j != 0)
+			//    {
+			//	    m_deviceResources->PIXBeginEvent(L"Draw Sphere");
+			//	    XMMATRIX local = m_world * Matrix::CreateTranslation(k+(-2.f), i+(-2.f), j+(0.f));
 
-					m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
-					m_deviceResources->PIXEndEvent(); 
-			    }
-				   
-			}
-	    }
-    }
+			//		m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
+			//		m_deviceResources->PIXEndEvent(); 
+			//    }
+			//	   
+			//}
+	  //  }
+   // }
 
+	m_deviceResources->PIXBeginEvent(L"Draw Sphere");
+    XMMATRIX local = m_world * Matrix::CreateTranslation((-2.f), (-2.f), (0.f));
+	m_shape->Draw(local, m_view, m_proj, Colors::White, m_texture.Get());
+	m_deviceResources->PIXEndEvent(); 
 	//Grid
    
 
@@ -333,11 +348,15 @@ void Game::Render()
 	m_heli->Draw(context, *m_states, heli_trans, m_view, m_proj);
 	m_deviceResources->PIXEndEvent();
 
-	//m_deviceResources->PIXBeginEvent(L"Draw Tokyo");
-	//XMMATRIX tokyo_trans = m_world * Matrix::CreateScale(0.05f) * Matrix::CreateTranslation(-2.f, -2.f, -2.f);
-	//m_tokyo->Draw(context, *m_states, tokyo_trans, m_view, m_proj);
-	//m_deviceResources->PIXEndEvent();
+	m_deviceResources->PIXBeginEvent(L"Draw City");
+	XMMATRIX tokyo_trans = m_world * Matrix::CreateScale(0.05f) * Matrix::CreateTranslation(-2.f, -2.f, -2.f);
+	m_tokyo->Draw(context, *m_states, tokyo_trans, m_view, m_proj);
+	m_deviceResources->PIXEndEvent();
 
+	m_deviceResources->PIXBeginEvent(L"Draw Gundam");
+	XMMATRIX gundam_trans = m_world * Matrix::CreateScale(0.05f) * Matrix::CreateTranslation(0.f, 0.f, 0.f);
+	m_tokyo->Draw(context, *m_states, gundam_trans, m_view, m_proj);
+	m_deviceResources->PIXEndEvent();
 
     //Mutlisampling
     context->ResolveSubresource(m_deviceResources->GetRenderTarget(), 0,
@@ -739,10 +758,7 @@ void Game::CreateDeviceDependentResources()
 
     //Model - Cup
     m_states = std::make_unique<CommonStates>(device);
-
 	m_fxFactory = std::make_unique<EffectFactory>(device);
-
-
 	m_model = Model::CreateFromCMO(device, L"cup.cmo", *m_fxFactory);
 	m_world = Matrix::Identity;
 
@@ -753,24 +769,38 @@ void Game::CreateDeviceDependentResources()
 	m_states = std::make_unique<CommonStates>(device);
 	m_fxFactory = std::make_unique<EffectFactory>(device);
 	m_heli = Model::CreateFromCMO(device,L"heli.cmo", *m_fxFactory);
-
 	m_world = Matrix::Identity;
 
 	m_states = std::make_unique<CommonStates>(device);
 	m_fxFactory = std::make_unique<EffectFactory>(device);
-	//m_tokyo = Model::CreateFromCMO(device,L"heli.cmo", *m_fxFactory);
-
+	m_tokyo = Model::CreateFromSDKMESH(device,L"cityblock.sdkmesh", *m_fxFactory);
 	m_world = Matrix::Identity;
+
+	m_states = std::make_unique<CommonStates>(device);
+	m_fxFactory = std::make_unique<EffectFactory>(device);
+	//m_gundam = Model::CreateFromCMO(device,L"gundam.cmo", *m_fxFactory);
+	//m_gundam = Model::CreateFromSDKMESH(device,L"gundam.sdkmesh", *m_fxFactory);
+	m_gundam = Model::CreateFromVBO(device,L"gundam.vbo");
+	m_world = Matrix::Identity;
+
+
+	//m_states = std::make_unique<CommonStates>(device);
+	//m_fxFactory = std::make_unique<EffectFactory>(device);
+	//m_ball = Model::CreateFromCMO(device,L"ball.cmo", *m_fxFactory);
+	//m_ball = Model::CreateFromSDKMESH(device,L"ball.sdkmesh", *m_fxFactory);
+	//m_world = Matrix::Identity;
 
 	//Texture    
 	m_room = GeometricPrimitive::CreateBox(context,
 	    XMFLOAT3(ROOM_BOUNDS[0], ROOM_BOUNDS[1], ROOM_BOUNDS[2]),
 	    false, true);
 
+
 	DX::ThrowIfFailed(
 	    CreateDDSTextureFromFile(device, L"roomtexture.dds",
 	        nullptr, m_roomTex.ReleaseAndGetAddressOf()));
-  
+
+
 }
 
 // Allocate all memory resources that change on a window SizeChanged event.

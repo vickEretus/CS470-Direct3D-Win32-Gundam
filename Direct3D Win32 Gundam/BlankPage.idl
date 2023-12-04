@@ -1,9 +1,0 @@
-namespace Direct3D_Win32_Gundam
-{
-    [default_interface]
-    runtimeclass BlankPage : Windows.UI.Xaml.Controls.Page
-    {
-        BlankPage();
-        Int32 MyProperty;
-    }
-}

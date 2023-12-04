@@ -103,11 +103,14 @@ private:
 
     //Modeling
 	std::unique_ptr<DirectX::IEffectFactory> m_fxFactory;
-	//std::unique_ptr<DirectX::EffectFactory> m_fxFactory;
 
 	std::unique_ptr<DirectX::Model> m_model;
     std::unique_ptr<DirectX::Model> m_heli;
     std::unique_ptr<DirectX::Model> m_tokyo;
+    std::unique_ptr<DirectX::Model> m_ball;
+	std::unique_ptr<DirectX::Model> m_gundam;
+
+
     //Mouse and keyboard
     std::unique_ptr<DirectX::Keyboard> m_keyboard;
 	std::unique_ptr<DirectX::Mouse> m_mouse;
